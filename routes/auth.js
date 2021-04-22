@@ -4,6 +4,41 @@ const User = require("../models/User.model");
 const bcrypt = require("bcryptjs");
 
 
+
+router.get("/login", async (req, res) => {
+  res.render("auth/login");
+});
+
+router.post("/login", async (req, res) => {
+  const { username, password } = req.body;
+  if (username === "" || password === "") {
+    res.render("auth/login", 
+    { errorMessage: "Indicate Username and Password" })
+    return;
+  }
+
+  const user = await User.findOne({ username: username });
+  if (user === null) {
+    res.render("auth/login", 
+    { errorMessage: "Invalid Login" })
+    return;
+  }
+
+
+  // If True - The User and PW match
+  if (bcrypt.compareSync(password, user.password)) {
+    // Successful Login
+
+    req.session.currentUser = user;
+    res.redirect("/");
+  } else {
+    // Unsuccessful Login - PW Doesn't Match
+    res.render("auth/login", 
+    { errorMessage: "Invalid Login" })
+    return;
+  }
+});
+
 router.get("/signup", async (req, res) => {
   res.render("auth/signup");
 });
@@ -53,6 +88,11 @@ router.post("/signup", async (req, res) => {
     return;
   }
 
+});
+
+router.post("/logout", (req, res) => {
+  req.session.destroy();
+  res.redirect("/");
 });
 
 module.exports = router;

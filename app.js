@@ -7,6 +7,7 @@ const hbs = require('hbs');
 const mongoose = require('mongoose');
 const logger = require('morgan');
 const path = require('path');
+const session = require("express-session");
 
 const app_name = require('./package.json').name;
 const debug = require('debug')(`${app_name}:${path.basename(__filename).split('.')[0]}`);
@@ -21,6 +22,19 @@ app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
+
+// Express Session Setup
+app.use(
+    session({
+      secret: process.env.SESSION_SECRET,
+      cookie: {
+        sameSite: true,
+        httpOnly: true,
+        maxAge: 60000
+      },
+      rolling: true
+    })
+  )
 
 // Express View engine setup
 app.set('views', path.join(__dirname, 'views'));
